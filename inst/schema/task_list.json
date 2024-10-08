@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "task_list",
+  "type": "object",
+  "properties": {
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "COMPLETE",
+              "ERROR",
+              "CANCELLED",
+              "DIED",
+              "TIMEOUT",
+              "MISSING",
+              "MOVED",
+              "DEFERRED",
+              "IMPOSSIBLE"
+            ]
+          },
+          "submit": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "start": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "complete": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "moved": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

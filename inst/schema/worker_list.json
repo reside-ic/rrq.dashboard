@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "worker_list",
+  "type": "object",
+  "properties": {
+    "workers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IDLE",
+              "BUSY",
+              "EXITED",
+              "LOST",
+              "PAUSED"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
