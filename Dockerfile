@@ -1,4 +1,7 @@
+ARG PUBLIC_URL=/
+
 FROM node:22
+ARG PUBLIC_URL
 WORKDIR /src
 
 COPY web/package.json /src
@@ -6,9 +9,10 @@ COPY web/package-lock.json /src
 RUN npm ci
 
 COPY web /src
-RUN npm run build
+RUN PUBLIC_URL=${PUBLIC_URL} npm run build
 
 FROM rocker/r-ver:latest
+ARG PUBLIC_URL
 
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
 
@@ -26,5 +30,6 @@ COPY --chmod=755 <<EOF /usr/local/bin/rrq.dashboard
 rrq.dashboard:::main()
 EOF
 
-CMD ["rrq.dashboard", "--static=/static"]
+ENV PUBLIC_URL=${PUBLIC_URL}
+CMD exec rrq.dashboard --static=/static --base-path=${PUBLIC_URL}
 EXPOSE 8888
