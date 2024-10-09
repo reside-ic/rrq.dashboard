@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_URL ?? "/api";
+const API_URL = process.env.REACT_APP_API_URL ?? process.env.PUBLIC_URL + "/api";
 export default async function fetcher(url) {
   const res = await fetch(API_URL + url);
   const envelope = await res.json();

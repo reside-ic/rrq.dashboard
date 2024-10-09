@@ -137,7 +137,13 @@ configure_cors <- function(r, allow_all_origins) {
 
 }
 
-router <- function(validate = FALSE, con = redux::hiredis(), static = NULL, allow_all_origins = FALSE) {
+router <- function(
+  validate = FALSE,
+  con = redux::hiredis(),
+  static = NULL,
+  base_path = NULL,
+  allow_all_origins = FALSE)
+{
   if (is.null(static)) {
     static <- system.file("static", package = "rrq.dashboard")
   }
@@ -152,7 +158,9 @@ router <- function(validate = FALSE, con = redux::hiredis(), static = NULL, allo
       })
   }
 
-  r
+  if (!is.null(base_path) && base_path != "/") {
+    r <- plumber::pr() |> plumber::pr_mount(base_path, r)
+  }
 }
 
 #' Main entrypoint.
@@ -165,13 +173,15 @@ main <- function(args = commandArgs(TRUE)) {
     --port=PORT          Port to run on [default: 8888]
     --static=PATH        Path to the static files to serve
     --allow-all-origins  Allow requests from any origin
+    --base-path=PATH     The relative path at which the server is accessible
   "
   dat <- docopt::docopt(usage, args)
 
   r <- router(
     validate = TRUE,
     static = dat$static,
-    allow_all_origins = dat$allow_all_origins)
+    allow_all_origins = dat$allow_all_origins,
+    base_path = dat$base_path)
 
   r$run("0.0.0.0", as.integer(dat$port))
 }
