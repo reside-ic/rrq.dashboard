@@ -20,6 +20,15 @@
               "LOST",
               "PAUSED"
             ]
+          },
+          "hostname": {
+            "type": "string",
+          },
+          "username": {
+            "type": "string",
+          },
+          "platform": {
+            "type": "string",
           }
         }
       }

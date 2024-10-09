@@ -7,6 +7,18 @@
       "type": "array",
       "items": {
         "type": "object",
+        "required": [
+          "id",
+          "status",
+          "queue",
+          "pid",
+          "local",
+          "worker_id",
+          "submit_time",
+          "start_time",
+          "complete_time",
+          "moved_time"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -27,19 +39,25 @@
               "IMPOSSIBLE"
             ]
           },
-          "submit": {
+          "local": {
+            "type": "boolean"
+          },
+          "pid": {
+            "type": ["number", "null"]
+          },
+          "submit_time": {
             "type": ["string", "null"],
             "format": "date-time"
           },
-          "start": {
+          "start_time": {
             "type": ["string", "null"],
             "format": "date-time"
           },
-          "complete": {
+          "complete_time": {
             "type": ["string", "null"],
             "format": "date-time"
           },
-          "moved": {
+          "moved_time": {
             "type": ["string", "null"],
             "format": "date-time"
           }

@@ -1,11 +1,24 @@
 Package: rrq.dashboard
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Authors@R: c(person("Paul", "Liétar", role = c("aut", "cre"),
+                    email = "pl2113@ic.ac.uk"),
+             person("Imperial College of Science, Technology and Medicine", role = "cph"))
+Description: A dashboard for rrq tasks.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
+Imports:
+    docopt,
+    redux,
+    tibble,
+    tidyr,
+    rrq,
+    plumber,
+    porcelain
+Depends:
+    dplyr
+Remotes:
+    mrc-ide/rrq,
+    reside-ic/porcelain
