@@ -70,6 +70,7 @@ export const taskColumns = [
     filterFn: filterDateTime,
   }),
   columnHelper.accessor(dateAccessorFn("start_time"), {
+    id: "start_time",
     header: "Started",
     Cell: renderDateCell,
     filterVariant: 'date',
@@ -77,6 +78,7 @@ export const taskColumns = [
     filterFn: filterDateTime,
   }),
   columnHelper.accessor(dateAccessorFn("complete_time"), {
+    id: "complete_time",
     header: "Completed",
     Cell: renderDateCell,
     filterVariant: 'date',
@@ -91,6 +93,14 @@ export const workerColumns = [
     filterFn: "includesString",
     enableClickToCopy: true,
     enableSorting: false,
+  }),
+  columnHelper.accessor(dateAccessorFn("start_time"), {
+    id: "start_time",
+    header: "Started",
+    Cell: renderDateCell,
+    filterVariant: 'date',
+    sortFn: "datetime",
+    filterFn: filterDateTime,
   }),
   columnHelper.accessor("status", {
     header: "Status",
@@ -111,5 +121,3 @@ export const workerColumns = [
     enableClickToCopy: true,
   }),
 ];
-
-

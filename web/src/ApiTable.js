@@ -32,6 +32,7 @@ export default function ApiTable(props) {
     columns: props.columns,
     initialState: {
       showColumnFilters: true,
+      ...props.initialState
     },
     state: { isLoading },
     enableTopToolbar: false,
