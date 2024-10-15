@@ -7,6 +7,14 @@
       "type": "array",
       "items": {
         "type": "object",
+        "required": [
+          "id",
+          "status",
+          "hostname",
+          "username",
+          "platform",
+          "start_time"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -29,6 +37,10 @@
           },
           "platform": {
             "type": "string",
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

@@ -82,6 +82,7 @@ function App() {
                   endpoint={queueId ? `/controller/${queueId}/tasks` : null}
                   accessorKey="tasks"
                   columns={taskColumns}
+                  initialState={{ sorting: [ { id: "start_time", desc: true }] }}
                 />
               </Tabs.Panel>
               <Tabs.Panel value="workers">
@@ -89,6 +90,7 @@ function App() {
                   endpoint={queueId ? `/controller/${queueId}/workers` : null}
                   accessorKey="workers"
                   columns={workerColumns}
+                  initialState={{ sorting: [ { id: "start_time", desc: true }] }}
                 />
               </Tabs.Panel>
             </Tabs>
