@@ -2,7 +2,7 @@ asISO8601 <- function(t) strftime(t, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 
 get_controller_keys <- function(con, controller_id) {
   keys <- rrq:::rrq_keys(controller_id)
-  if (!as.logical(con$EXISTS(keys$configuration))) {
+  if (!as.logical(con$EXISTS(keys$controller))) {
     porcelain::porcelain_stop(
       sprintf("rrq controller %s does not exist", controller_id),
       status_code = 404L)
@@ -25,8 +25,8 @@ redis_scan <- function(con, pattern) {
 
 target_controller_list <- function(con) {
   function() {
-    keys <- redis_scan(redux::hiredis(), "rrq:*:configuration")
-    controllers <- sub("(.*):configuration$", "\\1", keys)
+    keys <- redis_scan(redux::hiredis(), "rrq:*:controller")
+    controllers <- sub("(.*):controller$", "\\1", keys)
     list(controllers = data.frame(id = controllers))
   }
 }
@@ -80,7 +80,7 @@ target_worker_list <- function(con) {
   function(controller_id) {
     keys <- get_controller_keys(con, controller_id)
 
-    ids <- unlist(con$SMEMBERS(keys$worker_id))
+    ids <- unlist(con$HKEYS(keys$worker_status))
     if (length(ids) == 0) {
       return(list(workers=list()))
     }
