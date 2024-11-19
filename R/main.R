@@ -1,4 +1,4 @@
-asISO8601 <- function(t) strftime(t, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+asISO8601 <- function(t) strftime(as.numeric(t), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 
 get_controller_keys <- function(con, controller_id) {
   keys <- rrq:::rrq_keys(controller_id)
@@ -25,9 +25,24 @@ redis_scan <- function(con, pattern) {
 
 target_controller_list <- function(con) {
   function() {
-    keys <- redis_scan(redux::hiredis(), "rrq:*:controller")
-    controllers <- sub("(.*):controller$", "\\1", keys)
-    list(controllers = data.frame(id = controllers))
+    scan <- redis_scan(con, "rrq:*:controller")
+    ids <- sub("(.*):controller$", "\\1", scan)
+    keys <- rrq:::rrq_keys(ids)$controller
+
+    redis <- redux::redis
+    rows <-
+      do_pipeline(con,.commands = lapply(keys, function(k) {
+        redis$LINDEX(k, -1)
+      })) |>
+      pipeline_check() |>
+      lapply(redux::bin_to_object)
+
+    result <- dplyr::bind_rows(rows) |>
+      tibble::add_column(id = ids, .before = 1) |>
+      mutate(across(time, asISO8601)) |>
+      select(c(id, username, time))
+
+    list(controllers = result)
   }
 }
 
@@ -38,6 +53,10 @@ pipeline_check <- function(result) {
     }
   }
   invisible(result)
+}
+
+do_pipeline <- function(con, ...) {
+  pipeline_check(con$pipeline(...))
 }
 
 #' @importFrom dplyr mutate across ends_with arrange desc everything
@@ -51,7 +70,8 @@ target_task_list <- function(con) {
     }
 
     redis <- redux::redis
-    data <- tibble::as_tibble(pipeline_check(con$pipeline(
+    data <- tibble::as_tibble(do_pipeline(
+      con,
       status = redis$HMGET(keys$task_status, ids),
       queue = redis$HMGET(keys$task_queue, ids),
       local = redis$HMGET(keys$task_local, ids),
@@ -60,7 +80,7 @@ target_task_list <- function(con) {
       submit_time = redis$HMGET(keys$task_time_submit, ids),
       start_time = redis$HMGET(keys$task_time_start, ids),
       complete_time = redis$HMGET(keys$task_time_complete, ids),
-      moved_time = redis$HMGET(keys$task_time_moved, ids))))
+      moved_time = redis$HMGET(keys$task_time_moved, ids)))
 
     data <- data |>
       tibble::add_column(id = ids) |>
@@ -82,14 +102,15 @@ target_worker_list <- function(con) {
 
     ids <- unlist(con$HKEYS(keys$worker_status))
     if (length(ids) == 0) {
-      return(list(workers=list()))
+      return(list(workers = list()))
     }
 
     redis <- redux::redis
-    data <- tibble::as_tibble(pipeline_check(con$pipeline(
+    data <- tibble::as_tibble(do_pipeline(
+      con,
       status = redis$HMGET(keys$worker_status, ids),
       info = redis$HMGET(keys$worker_info, ids)
-    ))) |> tidyr::unchop(status)
+    )) |> tidyr::unchop(status)
 
     data <- data |>
       tibble::add_column(id = ids) |>
@@ -104,6 +125,41 @@ target_worker_list <- function(con) {
       select(c(id, status, hostname, username, platform, start_time))
 
     list(workers = data)
+  }
+}
+
+
+target_worker_events <- function(con) {
+  function(controller_id, worker_id) {
+    keys <- get_controller_keys(con, controller_id)
+    k <- rrq:::rrq_key_worker_log(keys$queue_id, worker_id)
+    logs <- as.character(con$LRANGE(k, 0, -1))
+    messages <- stringr::str_match(logs, "^(?<time>[0-9.]+)(?:/(?<child>[0-9]+))? (?<message>.*)$")
+    messages <- tibble::as_tibble(messages[, -1]) |>
+      mutate(across(time, asISO8601))
+    list(events = messages)
+  }
+}
+
+
+
+target_worker_config_list <- function(con) {
+  function(controller_id) {
+    keys <- get_controller_keys(con, controller_id)
+
+    names <- unlist(con$HKEYS(keys$worker_config))
+    rows <-
+      con$HMGET(keys$worker_config, names) |>
+      purrr::modify(function(data) {
+        redux::bin_to_object(data) |>
+          purrr::modify_if(is.null, function(...) NA) |>
+          unclass()
+      })
+
+    result <- dplyr::bind_rows(rows) |>
+      tibble::add_column(name = names, .before = 1)
+
+    list(worker_config = result)
   }
 }
 
@@ -129,11 +185,27 @@ endpoint_worker_list <- function(con) {
 }
 
 
+endpoint_worker_events <- function(con) {
+  porcelain::porcelain_endpoint$new(
+    "GET", "/controller/<controller_id>/worker/<worker_id>/events", target_worker_events(con),
+    returning = porcelain::porcelain_returning_json("worker_events"))
+}
+
+
+endpoint_worker_config_list <- function(con) {
+  porcelain::porcelain_endpoint$new(
+    "GET", "/controller/<controller_id>/worker_config", target_worker_config_list(con),
+    returning = porcelain::porcelain_returning_json("worker_config_list"))
+}
+
+
 api <- function(validate, con) {
   api <- porcelain::porcelain$new(validate = validate)
   api$handle(endpoint_controller_list(con))
   api$handle(endpoint_task_list(con))
   api$handle(endpoint_worker_list(con))
+  api$handle(endpoint_worker_events(con))
+  api$handle(endpoint_worker_config_list(con))
   api
 }
 
@@ -183,6 +255,8 @@ router <- function(
   if (!is.null(base_path) && base_path != "/") {
     r <- plumber::pr() |> plumber::pr_mount(base_path, r)
   }
+
+  r
 }
 
 #' Main entrypoint.

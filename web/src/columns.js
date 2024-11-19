@@ -1,13 +1,26 @@
 import dayjs from 'dayjs'
+import { Tooltip } from '@mantine/core';
 import { createColumnHelper } from "@tanstack/react-table";
 import { useDatesContext } from '@mantine/dates';
 
 function dateAccessorFn(key) {
-  return (row) => new Date(row[key])
+  return (row) => {
+    if (row[key] == null) {
+      return null;
+    } else {
+      return new Date(row[key]);
+    }
+  };
 }
 function LocalizedDate(props) {
   const { getLocale } = useDatesContext();
-  return <span>{props.value.toLocaleString(getLocale())}</span>
+  if (props.value == null) {
+    return "";
+  } else {
+    return (<Tooltip label={dayjs(props.value).fromNow()}>
+      <span>{props.value.toLocaleString(getLocale())}</span>
+    </Tooltip>);
+  };
 }
 function renderDateCell({ cell }) {
   return <LocalizedDate value={cell.getValue()} />
@@ -16,7 +29,9 @@ function filterDateTime(row, columnId, filterValue) {
   // TODO: this is timezone dependent. Currently uses the local one, should be
   // configurable?
   const value = row.getValue(columnId);
-  if (filterValue instanceof Date) {
+  if (value == null) {
+    return false;
+  } else if (filterValue instanceof Date) {
     return dayjs(filterValue).isSame(value, 'day')
   } else {
     const [startTime, endTime] = filterValue;
@@ -34,13 +49,11 @@ export const taskColumns = [
     enableClickToCopy: true,
     enableSorting: false,
   }),
-  columnHelper.accessor("queue", {
-    header: "Queue",
-    filterFn: "includesString",
-  }),
   columnHelper.accessor("worker_id", {
     header: "Worker",
     filterFn: "includesString",
+    enableClickToCopy: true,
+    enableSorting: false,
   }),
   columnHelper.accessor("status", {
     header: "Status",
@@ -121,3 +134,33 @@ export const workerColumns = [
     enableClickToCopy: true,
   }),
 ];
+
+
+export const workerConfigColumns = [
+  columnHelper.accessor("name", {
+    header: "Name",
+    filterFn: "includesString",
+    enableClickToCopy: true,
+    enableSorting: false,
+  }),
+  columnHelper.accessor("timeout_idle", {
+    header: "Idle timeout",
+    enableSorting: false,
+    enableColumnFilter: false,
+  }),
+  columnHelper.accessor("heartbeat_period", {
+    header: "Heartbeat period",
+    enableSorting: false,
+    enableColumnFilter: false,
+  }),
+  columnHelper.accessor("poll_queue", {
+    header: "Polling interval",
+    enableSorting: false,
+    enableColumnFilter: false,
+  }),
+  columnHelper.accessor("offload_threshold_size", {
+    header: "Offload threshold",
+    enableSorting: false,
+    enableColumnFilter: false,
+  }),
+]

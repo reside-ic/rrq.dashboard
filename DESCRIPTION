@@ -16,7 +16,8 @@ Imports:
     tidyr,
     rrq,
     plumber,
-    porcelain
+    porcelain,
+    purrr
 Depends:
     dplyr
 Remotes:
