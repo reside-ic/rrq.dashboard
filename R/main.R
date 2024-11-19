@@ -25,7 +25,10 @@ redis_scan <- function(con, pattern) {
 
 target_controller_list <- function(con) {
   function() {
-    scan <- redis_scan(con, "rrq:*:controller")
+    # SCAN is really slow but is incremental,
+    # KEYS is much faster but is a single operation which can block.
+    # redis_scan(con, "rrq:*:controller")
+    scan <- con$KEYS("rrq:*:controller")
     ids <- sub("(.*):controller$", "\\1", scan)
     keys <- rrq:::rrq_keys(ids)$controller
 
@@ -246,7 +249,7 @@ router <- function(
 
   if (!is.null(static)) {
     r <- r |>
-      plumber::pr_static("/static", static) |>
+      plumber::pr_static("/assets", file.path(static, "assets")) |>
       plumber::pr_get("/", function(req, res) {
         plumber::include_html(file.path(static, "index.html"), res)
       })
