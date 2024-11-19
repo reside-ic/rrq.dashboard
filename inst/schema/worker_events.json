@@ -1,23 +1,23 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "id": "controller_list",
+  "id": "worker_events",
   "type": "object",
   "properties": {
-    "tasks": {
+    "events": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "time",
+          "message"
+        ],
         "properties": {
-          "id": {
-            "type": "string",
-          },
-          "username": {
-            "type": ["string", "null"]
-          },
           "time": {
-            "type": ["string", "null"],
+            "type": "string",
             "format": "date-time"
+          },
+          "message": {
+            "type": "string"
           }
         }
       }

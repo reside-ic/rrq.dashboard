@@ -60,6 +60,7 @@ export default function ApiTable(props) {
         return (<Box className={classes.tableEmpty}><Text color="red">{error.message}</Text></Box>);
       }
     },
+    ...props.tableProps,
   });
 
   return <MantineReactTable table={table} />;

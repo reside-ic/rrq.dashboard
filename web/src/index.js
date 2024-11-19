@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import localizedFormat from "dayjs/plugin/localizedFormat";
+import relativeTime from "dayjs/plugin/relativeTime";
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -10,6 +11,7 @@ import 'dayjs/locale/en-gb'
 import 'dayjs/locale/en'
 
 dayjs.extend(localizedFormat);
+dayjs.extend(relativeTime);
 
 const router = createBrowserRouter([
   {

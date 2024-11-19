@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "worker_config_list",
+  "type": "object",
+  "properties": {
+    "worker_config": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "queue": {
+            "type": "string"
+          },
+          "logdir": {
+            "type": ["string", "null"]
+          },
+          "timeout_process_die": {
+            "type": ["number", "null"]
+          },
+          "poll_process": {
+            "type": ["number", "null"]
+          },
+          "poll_queue": {
+            "type": ["number", "null"]
+          },
+          "timeout_idle": {
+            "type": ["number", "null"]
+          },
+          "heartbeat_period": {
+            "type": ["number", "null"]
+          },
+          "offload_threshold_size": {
+            "type": ["number", "null"]
+          },
+          "verbose": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
