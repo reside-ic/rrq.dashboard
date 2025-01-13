@@ -28,9 +28,14 @@ COPY --from=0 /src/dist /static
 
 COPY --chmod=755 <<EOF /usr/local/bin/rrq.dashboard
 #!/usr/bin/env Rscript
-rrq.dashboard:::main()
+rrq.dashboard:::main(c("--static=/static", "--base-path=${BASE_URL}"))
 EOF
 
+# https://stackoverflow.com/questions/37515686/stop-a-running-docker-container-by-sending-sigterm
+ADD https://github.com/krallin/tini/releases/download/v0.19.0/tini /tini
+RUN chmod +x /tini
+ENTRYPOINT ["/tini", "--"]
+
 ENV BASE_URL=${BASE_URL}
-CMD exec rrq.dashboard --static=/static --base-path=${BASE_URL}
+CMD ["/usr/local/bin/rrq.dashboard"]
 EXPOSE 8888
