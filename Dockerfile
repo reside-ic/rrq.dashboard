@@ -4,8 +4,7 @@ FROM node:22
 ARG BASE_URL
 WORKDIR /src
 
-COPY web/package.json /src
-COPY web/package-lock.json /src
+COPY web/package.json web/package-lock.json web/.npmrc /src/
 RUN npm ci
 
 COPY web /src
